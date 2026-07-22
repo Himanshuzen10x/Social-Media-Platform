@@ -7,12 +7,19 @@ dotenv.config();
 
 const app = express();
 
-// Connect to MongoDB
-connectDB();
-
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Connect to MongoDB before handling requests
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    res.status(500).json({ message: 'Database connection failed' });
+  }
+});
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -23,7 +30,10 @@ app.get('/', (req, res) => {
   res.json({ message: 'Social Media API is running' });
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Only listen when not on Vercel
+if (process.env.VERCEL !== '1') {
+  const PORT = process.env.PORT || 5001;
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
 
 module.exports = app;
