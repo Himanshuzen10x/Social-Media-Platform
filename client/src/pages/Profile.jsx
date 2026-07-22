@@ -11,11 +11,13 @@ function Profile() {
   const [loading, setLoading] = useState(true);
   const [editBio, setEditBio] = useState(false);
   const [bio, setBio] = useState('');
+  const [activeTab, setActiveTab] = useState('posts');
 
   const isOwn = currentUser._id === id;
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const [userRes, postsRes] = await Promise.all([
           API.get(`/users/${id}`),
@@ -48,7 +50,6 @@ function Profile() {
       const res = await API.put('/users/profile', { bio });
       setProfile(res.data);
       setEditBio(false);
-      // Update stored user
       const stored = JSON.parse(localStorage.getItem('user'));
       stored.bio = bio;
       localStorage.setItem('user', JSON.stringify(stored));
@@ -68,48 +69,70 @@ function Profile() {
     setPosts(posts.filter(p => p._id !== postId));
   };
 
+  const likedPosts = posts.filter(p => p.likes.includes(currentUser._id));
+
   if (loading) return <div className="loading">Loading...</div>;
   if (!profile) return <div className="loading">User not found</div>;
 
   return (
     <div className="profile-page">
+      <div className="profile-cover"></div>
       <div className="profile-header">
-        <div className="avatar-large">{profile.username[0].toUpperCase()}</div>
+        <div className="profile-top">
+          <div className="avatar-large">{profile.username[0].toUpperCase()}</div>
+          {!isOwn && (
+            <button onClick={handleFollow} className={`btn-follow ${isFollowing ? 'following' : ''}`}>
+              {isFollowing ? 'Following' : 'Follow'}
+            </button>
+          )}
+          {isOwn && (
+            <button onClick={() => setEditBio(true)} className="btn-follow" style={{marginTop: '12px'}}>Edit profile</button>
+          )}
+        </div>
+
         <h2>{profile.username}</h2>
+        <div className="profile-handle">@{profile.username.toLowerCase()}</div>
 
         {editBio ? (
           <div className="edit-bio">
-            <textarea value={bio} onChange={(e) => setBio(e.target.value)} maxLength={200} placeholder="Write your bio..." />
+            <textarea value={bio} onChange={(e) => setBio(e.target.value)} maxLength={200} placeholder="Write your bio..." rows={3} />
             <div>
               <button onClick={handleSaveBio}>Save</button>
               <button onClick={() => setEditBio(false)} className="btn-cancel">Cancel</button>
             </div>
           </div>
         ) : (
-          <p className="bio">{profile.bio || 'No bio yet'} {isOwn && <button onClick={() => setEditBio(true)} className="btn-edit">Edit</button>}</p>
+          <p className="bio">{profile.bio || 'No bio yet.'}</p>
         )}
 
         <div className="profile-stats">
-          <span><strong>{posts.length}</strong> Posts</span>
-          <span><strong>{profile.followers?.length || 0}</strong> Followers</span>
           <span><strong>{profile.following?.length || 0}</strong> Following</span>
+          <span><strong>{profile.followers?.length || 0}</strong> Followers</span>
         </div>
+      </div>
 
-        {!isOwn && (
-          <button onClick={handleFollow} className={`btn-follow ${isFollowing ? 'following' : ''}`}>
-            {isFollowing ? 'Unfollow' : 'Follow'}
-          </button>
-        )}
+      <div className="profile-tabs">
+        <button className={activeTab === 'posts' ? 'active' : ''} onClick={() => setActiveTab('posts')}>Posts</button>
+        <button className={activeTab === 'likes' ? 'active' : ''} onClick={() => setActiveTab('likes')}>Likes</button>
       </div>
 
       <div className="posts-list">
-        <h3>Posts</h3>
-        {posts.length === 0 ? (
-          <p className="no-posts">No posts yet.</p>
+        {activeTab === 'posts' ? (
+          posts.length === 0 ? (
+            <p className="no-posts">No posts yet.</p>
+          ) : (
+            posts.map(post => (
+              <Post key={post._id} post={post} onUpdate={handlePostUpdate} onDelete={handlePostDelete} />
+            ))
+          )
         ) : (
-          posts.map(post => (
-            <Post key={post._id} post={post} onUpdate={handlePostUpdate} onDelete={handlePostDelete} />
-          ))
+          likedPosts.length === 0 ? (
+            <p className="no-posts">No liked posts.</p>
+          ) : (
+            likedPosts.map(post => (
+              <Post key={post._id} post={post} onUpdate={handlePostUpdate} onDelete={handlePostDelete} />
+            ))
+          )
         )}
       </div>
     </div>

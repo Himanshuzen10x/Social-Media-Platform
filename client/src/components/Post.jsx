@@ -62,24 +62,25 @@ function Post({ post, onUpdate, onDelete }) {
       <div className="post-header">
         <Link to={`/profile/${post.user._id}`} className="post-user">
           <div className="avatar">{post.user.username[0].toUpperCase()}</div>
-          <div>
-            <span className="post-username">{post.user.username}</span>
-            <span className="post-handle"> · {timeAgo(post.createdAt)}</span>
+          <div className="post-user-info">
+            <div>
+              <span className="post-username">{post.user.username}</span>
+              <span className="post-handle"> @{post.user.username.toLowerCase()}</span>
+              <span className="post-handle"> · {timeAgo(post.createdAt)}</span>
+            </div>
           </div>
         </Link>
-        <div className="post-meta">
-          {isOwner && <button onClick={handleDelete} className="btn-delete" title="Delete">✕</button>}
-        </div>
+        {isOwner && <button onClick={handleDelete} className="btn-delete" title="Delete">✕</button>}
       </div>
 
       <p className="post-text">{post.text}</p>
 
       <div className="post-actions">
-        <button onClick={handleLike} className={isLiked ? 'liked' : ''}>
-          {isLiked ? '♥' : '♡'} {post.likes.length > 0 && post.likes.length}
-        </button>
-        <button onClick={() => setShowComments(!showComments)}>
+        <button onClick={() => setShowComments(!showComments)} className="comment-btn">
           💬 {post.comments.length > 0 && post.comments.length}
+        </button>
+        <button onClick={handleLike} className={`like-btn ${isLiked ? 'liked' : ''}`}>
+          {isLiked ? '♥' : '♡'} {post.likes.length > 0 && post.likes.length}
         </button>
       </div>
 

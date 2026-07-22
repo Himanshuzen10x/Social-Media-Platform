@@ -36,7 +36,7 @@ function Home() {
 
   return (
     <div className="home-page">
-      <h1>Feed</h1>
+      <div className="feed-header">Home</div>
       <CreatePost onPostCreated={handlePostCreated} />
       <div className="posts-list">
         {posts.length === 0 ? (
