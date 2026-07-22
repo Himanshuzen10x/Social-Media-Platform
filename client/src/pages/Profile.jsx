@@ -35,16 +35,6 @@ function Profile() {
     fetchData();
   }, [id]);
 
-  const handleFollow = async () => {
-    try {
-      await API.put(`/users/follow/${id}`);
-      const res = await API.get(`/users/${id}`);
-      setProfile(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const handleSaveBio = async () => {
     try {
       const res = await API.put('/users/profile', { bio });
@@ -58,8 +48,6 @@ function Profile() {
       console.error(err);
     }
   };
-
-  const isFollowing = profile?.followers?.some(f => (f._id || f) === currentUser._id);
 
   const handlePostUpdate = (updatedPost) => {
     setPosts(posts.map(p => p._id === updatedPost._id ? updatedPost : p));
@@ -80,11 +68,6 @@ function Profile() {
       <div className="profile-header">
         <div className="profile-top">
           <div className="avatar-large">{profile.username[0].toUpperCase()}</div>
-          {!isOwn && (
-            <button onClick={handleFollow} className={`btn-follow ${isFollowing ? 'following' : ''}`}>
-              {isFollowing ? 'Following' : 'Follow'}
-            </button>
-          )}
           {isOwn && (
             <button onClick={() => setEditBio(true)} className="btn-follow" style={{marginTop: '12px'}}>Edit profile</button>
           )}
@@ -106,8 +89,7 @@ function Profile() {
         )}
 
         <div className="profile-stats">
-          <span><strong>{profile.following?.length || 0}</strong> Following</span>
-          <span><strong>{profile.followers?.length || 0}</strong> Followers</span>
+          <span><strong>{posts.length}</strong> Posts</span>
         </div>
       </div>
 

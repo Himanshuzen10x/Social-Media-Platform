@@ -510,10 +510,57 @@ h3 { margin-bottom: 0; font-size: 1rem; font-weight: 700; background: #fff; padd
 .posts-list { clear: both; }
 
 /* Responsive */
-@media (max-width: 600px) {
-  .container { padding: 0; }
-  .post-text { margin-left: 0; margin-top: 8px; }
+@media (max-width: 768px) {
+  .container { padding: 0; max-width: 100%; }
+  
+  /* Nav mobile */
+  .navbar { padding: 8px 12px; }
+  .nav-logo { font-size: 1.1rem; }
+  .nav-links { gap: 2px; }
+  .nav-links a { padding: 6px 10px; font-size: 0.82rem; }
+  .btn-logout { padding: 5px 12px; font-size: 0.8rem; }
+  
+  /* Posts mobile */
+  .post-card { padding: 10px 14px; }
+  .post-text { margin-left: 0; margin-top: 8px; font-size: 0.92rem; }
   .post-actions { margin-left: 0; }
   .comments-section { margin-left: 0; }
-  .profile-stats { gap: 16px; }
+  .avatar { width: 42px; height: 42px; font-size: 1rem; }
+  .post-username { font-size: 0.88rem; }
+  .post-handle { font-size: 0.82rem; }
+  
+  /* Create post mobile */
+  .create-post { padding: 12px 14px; }
+  .create-post textarea { font-size: 0.95rem; min-height: 60px; }
+  
+  /* Profile mobile */
+  .profile-cover { height: 120px; }
+  .avatar-large { width: 75px; height: 75px; font-size: 1.8rem; margin-top: -38px; }
+  .profile-header { padding: 0 14px 14px; }
+  .profile-header h2 { font-size: 1.1rem; }
+  .profile-stats { gap: 16px; font-size: 0.85rem; }
+  .profile-tabs button { font-size: 0.85rem; padding: 12px; }
+  
+  /* Auth mobile */
+  .auth-card { margin: 16px; padding: 24px; }
+  
+  /* Search mobile */
+  .search-page { padding: 12px; }
+  .search-form { flex-direction: column; }
+  .search-form button { width: 100%; }
+  
+  /* Feed header */
+  .feed-header { font-size: 1rem; padding: 12px 14px; }
+  
+  /* Comment form mobile */
+  .comment-form input { font-size: 0.82rem; padding: 7px 12px; }
+  .comment-form button { font-size: 0.8rem; padding: 7px 14px; }
+}
+
+@media (max-width: 380px) {
+  .nav-links a { padding: 5px 8px; font-size: 0.78rem; }
+  .btn-logout { font-size: 0.78rem; padding: 4px 10px; }
+  .avatar { width: 36px; height: 36px; font-size: 0.9rem; }
+  .post-card { padding: 10px 12px; }
+  .post-actions button { padding: 4px 8px; font-size: 0.82rem; margin-right: 16px; }
 }
