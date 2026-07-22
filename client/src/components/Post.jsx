@@ -13,7 +13,6 @@ function Post({ post, onUpdate, onDelete }) {
   const handleLike = async () => {
     try {
       await API.put(`/posts/like/${post._id}`);
-      // Toggle like locally
       const updatedLikes = isLiked
         ? post.likes.filter(id => id !== user._id)
         : [...post.likes, user._id];
@@ -47,11 +46,15 @@ function Post({ post, onUpdate, onDelete }) {
 
   const timeAgo = (date) => {
     const diff = Date.now() - new Date(date).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}m ago`;
+    const secs = Math.floor(diff / 1000);
+    if (secs < 60) return `${secs}s`;
+    const mins = Math.floor(secs / 60);
+    if (mins < 60) return `${mins}m`;
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
+    if (hrs < 24) return `${hrs}h`;
+    const days = Math.floor(hrs / 24);
+    if (days < 30) return `${days}d`;
+    return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   return (
@@ -59,22 +62,24 @@ function Post({ post, onUpdate, onDelete }) {
       <div className="post-header">
         <Link to={`/profile/${post.user._id}`} className="post-user">
           <div className="avatar">{post.user.username[0].toUpperCase()}</div>
-          <span>{post.user.username}</span>
+          <div>
+            <span className="post-username">{post.user.username}</span>
+            <span className="post-handle"> · {timeAgo(post.createdAt)}</span>
+          </div>
         </Link>
         <div className="post-meta">
-          <span className="post-time">{timeAgo(post.createdAt)}</span>
-          {isOwner && <button onClick={handleDelete} className="btn-delete">✕</button>}
+          {isOwner && <button onClick={handleDelete} className="btn-delete" title="Delete">✕</button>}
         </div>
       </div>
 
       <p className="post-text">{post.text}</p>
 
       <div className="post-actions">
-        <button onClick={handleLike} className={`btn-like ${isLiked ? 'liked' : ''}`}>
-          {isLiked ? '❤️' : '🤍'} {post.likes.length}
+        <button onClick={handleLike} className={isLiked ? 'liked' : ''}>
+          {isLiked ? '♥' : '♡'} {post.likes.length > 0 && post.likes.length}
         </button>
         <button onClick={() => setShowComments(!showComments)}>
-          💬 {post.comments.length}
+          💬 {post.comments.length > 0 && post.comments.length}
         </button>
       </div>
 
@@ -82,16 +87,16 @@ function Post({ post, onUpdate, onDelete }) {
         <div className="comments-section">
           {post.comments.map((c, i) => (
             <div key={i} className="comment">
-              <strong>{c.user?.username || 'User'}:</strong> {c.text}
+              <strong>{c.user?.username || 'User'}</strong> {c.text}
             </div>
           ))}
           <form onSubmit={handleComment} className="comment-form">
             <input
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Write a comment..."
+              placeholder="Post your reply..."
             />
-            <button type="submit">Send</button>
+            <button type="submit">Reply</button>
           </form>
         </div>
       )}

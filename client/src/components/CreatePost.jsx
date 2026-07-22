@@ -3,6 +3,7 @@ import { API } from '../context/AuthContext';
 
 function CreatePost({ onPostCreated }) {
   const [text, setText] = useState('');
+  const maxChars = 280;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,15 +17,20 @@ function CreatePost({ onPostCreated }) {
     }
   };
 
+  const charClass = text.length > 260 ? 'danger' : text.length > 220 ? 'warning' : '';
+
   return (
     <form className="create-post" onSubmit={handleSubmit}>
       <textarea
         value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="What's on your mind?"
-        maxLength={500}
+        onChange={(e) => setText(e.target.value.slice(0, maxChars))}
+        placeholder="What's happening?"
+        rows={3}
       />
-      <button type="submit" disabled={!text.trim()}>Post</button>
+      <div className="create-post-footer">
+        <span className={`char-count ${charClass}`}>{text.length}/{maxChars}</span>
+        <button type="submit" disabled={!text.trim()}>Post</button>
+      </div>
     </form>
   );
 }

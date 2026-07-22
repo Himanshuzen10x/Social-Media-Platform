@@ -15,10 +15,10 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="nav-container">
-        <Link to="/" className="nav-logo">📱 SocialApp</Link>
+        <Link to="/" className="nav-logo">✦ XChat</Link>
         <div className="nav-links">
           <Link to="/">Home</Link>
-          <Link to="/search">Search</Link>
+          <Link to="/search">Explore</Link>
           <Link to={`/profile/${user._id}`}>Profile</Link>
           <button onClick={handleLogout} className="btn-logout">Logout</button>
         </div>
