@@ -12,6 +12,7 @@ function Profile() {
   const [editBio, setEditBio] = useState(false);
   const [bio, setBio] = useState('');
   const [activeTab, setActiveTab] = useState('posts');
+  const [uploadingPic, setUploadingPic] = useState(false);
 
   const isOwn = currentUser._id === id;
 
@@ -49,6 +50,42 @@ function Profile() {
     }
   };
 
+  const handleProfilePicUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size must be less than 5MB');
+      return;
+    }
+
+    setUploadingPic(true);
+    try {
+      // Upload to Cloudinary
+      const formData = new FormData();
+      formData.append('image', file);
+      const uploadRes = await API.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      const imageUrl = uploadRes.data.url;
+
+      // Update profile
+      const res = await API.put('/users/profile', { bio: profile.bio, profilePic: imageUrl });
+      setProfile(res.data);
+
+      // Update local storage
+      const stored = JSON.parse(localStorage.getItem('user'));
+      stored.profilePic = imageUrl;
+      localStorage.setItem('user', JSON.stringify(stored));
+      setUser(stored);
+    } catch (err) {
+      alert('Error uploading profile picture');
+      console.error(err);
+    } finally {
+      setUploadingPic(false);
+    }
+  };
+
   const handlePostUpdate = (updatedPost) => {
     setPosts(posts.map(p => p._id === updatedPost._id ? updatedPost : p));
   };
@@ -62,12 +99,33 @@ function Profile() {
   if (loading) return <div className="loading">Loading...</div>;
   if (!profile) return <div className="loading">User not found</div>;
 
+  const renderAvatar = () => {
+    if (profile.profilePic) {
+      return <img src={profile.profilePic} alt={profile.username} className="avatar-large avatar-img" />;
+    }
+    return <div className="avatar-large">{profile.username[0].toUpperCase()}</div>;
+  };
+
   return (
     <div className="profile-page">
       <div className="profile-cover"></div>
       <div className="profile-header">
         <div className="profile-top">
-          <div className="avatar-large">{profile.username[0].toUpperCase()}</div>
+          <div className="profile-avatar-wrapper">
+            {renderAvatar()}
+            {isOwn && (
+              <label className="profile-pic-upload-btn" title={uploadingPic ? 'Uploading...' : 'Change profile picture'}>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  onChange={handleProfilePicUpload}
+                  hidden
+                  disabled={uploadingPic}
+                />
+                {uploadingPic ? '⏳' : '📷'}
+              </label>
+            )}
+          </div>
           {isOwn && (
             <button onClick={() => setEditBio(true)} className="btn-follow" style={{marginTop: '12px'}}>Edit profile</button>
           )}

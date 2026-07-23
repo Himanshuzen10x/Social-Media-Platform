@@ -19,7 +19,14 @@ function Navbar() {
         <div className="nav-links">
           <Link to="/">Home</Link>
           <Link to="/search">Explore</Link>
-          <Link to={`/profile/${user._id}`}>Profile</Link>
+          <Link to={`/profile/${user._id}`} className="nav-profile-link">
+            {user.profilePic ? (
+              <img src={user.profilePic} alt={user.username} className="nav-avatar nav-avatar-img" />
+            ) : (
+              <span className="nav-avatar">{user.username[0].toUpperCase()}</span>
+            )}
+            Profile
+          </Link>
           <button onClick={handleLogout} className="btn-logout">Logout</button>
         </div>
       </div>

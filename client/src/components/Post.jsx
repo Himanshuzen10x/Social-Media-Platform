@@ -57,11 +57,28 @@ function Post({ post, onUpdate, onDelete }) {
     return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
+  const renderAvatar = (username, profilePic, size = 'small') => {
+    if (profilePic) {
+      return (
+        <img
+          src={profilePic}
+          alt={username}
+          className={size === 'small' ? 'avatar avatar-img' : 'avatar-large avatar-img'}
+        />
+      );
+    }
+    return (
+      <div className={size === 'small' ? 'avatar' : 'avatar-large'}>
+        {username[0].toUpperCase()}
+      </div>
+    );
+  };
+
   return (
     <div className="post-card">
       <div className="post-header">
         <Link to={`/profile/${post.user._id}`} className="post-user">
-          <div className="avatar">{post.user.username[0].toUpperCase()}</div>
+          {renderAvatar(post.user.username, post.user.profilePic)}
           <div className="post-user-info">
             <div>
               <span className="post-username">{post.user.username}</span>
@@ -74,6 +91,12 @@ function Post({ post, onUpdate, onDelete }) {
       </div>
 
       <p className="post-text">{post.text}</p>
+
+      {post.image && (
+        <div className="post-image-container">
+          <img src={post.image} alt="Post" className="post-image" loading="lazy" />
+        </div>
+      )}
 
       <div className="post-actions">
         <button onClick={() => setShowComments(!showComments)} className="comment-btn">
