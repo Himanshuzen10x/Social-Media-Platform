@@ -18,7 +18,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // Get feed (all posts, newest first)
-router.get('/feed', auth, async (req, res) => {
+router.get('/feed', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
@@ -55,7 +55,7 @@ router.get('/friends-feed', auth, async (req, res) => {
 });
 
 // Get user's posts
-router.get('/user/:userId', auth, async (req, res) => {
+router.get('/user/:userId', async (req, res) => {
   try {
     const posts = await Post.find({ user: req.params.userId })
       .populate('user', 'username profilePic')
