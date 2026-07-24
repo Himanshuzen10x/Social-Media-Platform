@@ -3,6 +3,13 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 
+// Explicit route imports for Vercel bundler file tracing
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
+const postRoutes = require('./routes/posts');
+const uploadRoutes = require('./routes/upload');
+const friendRoutes = require('./routes/friends');
+
 dotenv.config();
 
 const app = express();
@@ -28,11 +35,11 @@ app.use(async (req, res, next) => {
 });
 
 // Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/posts', require('./routes/posts'));
-app.use('/api/upload', require('./routes/upload'));
-app.use('/api/friends', require('./routes/friends'));
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/friends', friendRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Social Media API is running' });
