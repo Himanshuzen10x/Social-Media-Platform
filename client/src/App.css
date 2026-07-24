@@ -722,3 +722,498 @@ h3 { margin-bottom: 0; font-size: 1rem; font-weight: 700; background: #fff; padd
   .avatar-large.avatar-img { width: 75px; height: 75px; margin-top: -38px; }
 }
 
+/* ======================================== */
+/* Friends Feature Styles                   */
+/* ======================================== */
+
+/* Friends Page Header */
+.friends-header {
+  background: #fff;
+  padding: 16px;
+  border: 1px solid #e1e8ed;
+  border-bottom: none;
+}
+.friends-header h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #14171a;
+  margin: 0;
+}
+
+/* Friends Tabs */
+.friends-tabs {
+  display: flex;
+  background: #fff;
+  border-left: 1px solid #e1e8ed;
+  border-right: 1px solid #e1e8ed;
+  border-bottom: 1px solid #e1e8ed;
+}
+.friends-tabs button {
+  flex: 1;
+  padding: 14px 8px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #657786;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+.friends-tabs button:hover {
+  background: #e8f5fe;
+  color: #1da1f2;
+}
+.friends-tabs button.active {
+  color: #1da1f2;
+  border-bottom-color: #1da1f2;
+}
+
+/* Friends Empty State */
+.friends-empty-state {
+  background: #fff;
+  border: 1px solid #e1e8ed;
+  padding: 48px 24px;
+  text-align: center;
+}
+.friends-empty-state .empty-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
+.friends-empty-state h3 {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #14171a;
+  margin-bottom: 8px;
+  background: none;
+  padding: 0;
+  border: none;
+}
+.friends-empty-state p {
+  color: #657786;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+.btn-find-friends {
+  display: inline-block;
+  padding: 10px 24px;
+  background: #1da1f2;
+  color: #fff !important;
+  border-radius: 24px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none !important;
+  transition: background 0.15s;
+}
+.btn-find-friends:hover {
+  background: #1a91da;
+  text-decoration: none !important;
+}
+
+/* Friend Card */
+.friend-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1px solid #e1e8ed;
+  border-top: none;
+  padding: 14px 16px;
+  transition: background 0.1s;
+}
+.friend-card:first-child {
+  border-top: 1px solid #e1e8ed;
+}
+.friend-card:hover {
+  background: #f5f8fa;
+}
+.friend-card-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: inherit;
+  text-decoration: none;
+  flex: 1;
+  min-width: 0;
+}
+.friend-card-info:hover {
+  text-decoration: none;
+}
+.friend-card-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.friend-card-details strong {
+  font-size: 0.93rem;
+  color: #14171a;
+}
+.friend-card-handle {
+  font-size: 0.82rem;
+  color: #657786;
+}
+.friend-card-bio {
+  font-size: 0.85rem;
+  color: #657786;
+  margin-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Unfriend Button */
+.btn-unfriend {
+  padding: 7px 18px;
+  background: #fff;
+  color: #657786;
+  border: 1px solid #e1e8ed;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-unfriend:hover {
+  color: #f4212e;
+  border-color: #f4212e;
+  background: #fef1f1;
+}
+
+/* Requests Section */
+.requests-container {
+  background: transparent;
+}
+.requests-section {
+  margin-bottom: 0;
+}
+.requests-section-title {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem !important;
+  font-weight: 700;
+  color: #14171a;
+  padding: 14px 16px !important;
+  background: #fff !important;
+  border: 1px solid #e1e8ed !important;
+  border-bottom: none !important;
+  margin-bottom: 0 !important;
+}
+.requests-count {
+  background: #f4212e;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  min-width: 20px;
+  text-align: center;
+}
+.no-requests {
+  text-align: center;
+  color: #657786;
+  padding: 24px;
+  font-size: 0.88rem;
+  background: #fff;
+  border: 1px solid #e1e8ed;
+}
+
+/* Request Card */
+.request-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1px solid #e1e8ed;
+  border-top: none;
+  padding: 14px 16px;
+  transition: background 0.1s;
+}
+.request-card:hover {
+  background: #f5f8fa;
+}
+.request-card-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: inherit;
+  text-decoration: none;
+  flex: 1;
+  min-width: 0;
+}
+.request-card-info:hover {
+  text-decoration: none;
+}
+.request-card-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.request-card-details strong {
+  font-size: 0.93rem;
+  color: #14171a;
+}
+.request-card-handle {
+  font-size: 0.82rem;
+  color: #657786;
+}
+.request-card-bio {
+  font-size: 0.85rem;
+  color: #657786;
+  margin-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Request Action Buttons */
+.request-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.btn-accept {
+  padding: 7px 16px;
+  background: #1da1f2;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.btn-accept:hover {
+  background: #1a91da;
+}
+.btn-reject {
+  padding: 7px 16px;
+  background: #fff;
+  color: #657786;
+  border: 1px solid #e1e8ed;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.btn-reject:hover {
+  color: #f4212e;
+  border-color: #f4212e;
+  background: #fef1f1;
+}
+
+/* Pending Badge */
+.request-pending-badge {
+  font-size: 0.82rem;
+  color: #ffad1f;
+  font-weight: 600;
+  padding: 6px 14px;
+  background: #fff8e1;
+  border-radius: 20px;
+  border: 1px solid #ffe082;
+  flex-shrink: 0;
+}
+
+/* ======================================== */
+/* Navbar Friends Link + Badge              */
+/* ======================================== */
+.nav-friends-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.nav-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: #f4212e;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  line-height: 1;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+/* ======================================== */
+/* Profile Friend Action Button             */
+/* ======================================== */
+.profile-actions-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-top: 12px;
+}
+.btn-friend-action {
+  padding: 8px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.btn-add-friend {
+  background: #1da1f2;
+  color: #fff;
+  border-color: #1da1f2;
+}
+.btn-add-friend:hover {
+  background: #1a91da;
+  border-color: #1a91da;
+}
+.btn-request-sent {
+  background: #fff;
+  color: #ffad1f;
+  border-color: #ffe082;
+  cursor: default;
+}
+.btn-accept-request {
+  background: #17bf63;
+  color: #fff;
+  border-color: #17bf63;
+}
+.btn-accept-request:hover {
+  background: #14a857;
+  border-color: #14a857;
+}
+.btn-friends-status {
+  background: #fff;
+  color: #17bf63;
+  border-color: #17bf63;
+}
+.btn-friends-status:hover {
+  color: #f4212e;
+  border-color: #f4212e;
+  background: #fef1f1;
+}
+.btn-friends-status:hover::after {
+  content: ' (Unfriend)';
+}
+.btn-friend-action:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ======================================== */
+/* Search Page Friend Badges                */
+/* ======================================== */
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #e1e8ed;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  transition: background 0.1s;
+}
+.user-card:hover {
+  background: #f5f8fa;
+}
+.user-card-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: inherit;
+  text-decoration: none;
+  flex: 1;
+  min-width: 0;
+}
+.user-card-link:hover {
+  text-decoration: none;
+}
+.search-friend-badge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 16px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.search-friend-badge.friends {
+  background: #e8f8ef;
+  color: #17bf63;
+  border: 1px solid #b7ebc9;
+}
+.search-friend-badge.pending {
+  background: #fff8e1;
+  color: #ffad1f;
+  border: 1px solid #ffe082;
+}
+.search-friend-badge.received {
+  background: #e8f5fe;
+  color: #1da1f2;
+  border: 1px solid #b6dcf5;
+}
+.search-add-friend-btn {
+  padding: 6px 14px;
+  background: #1da1f2;
+  color: #fff;
+  border: none;
+  border-radius: 18px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: inherit;
+  transition: background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.search-add-friend-btn:hover {
+  background: #1a91da;
+}
+.search-add-friend-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ======================================== */
+/* Friends Mobile Responsive                */
+/* ======================================== */
+@media (max-width: 768px) {
+  .friends-header { padding: 12px 14px; }
+  .friends-header h2 { font-size: 1.05rem; }
+  .friends-tabs button { font-size: 0.82rem; padding: 12px 6px; }
+  .friend-card { padding: 12px 14px; }
+  .friend-card-details strong { font-size: 0.88rem; }
+  .btn-unfriend { padding: 6px 14px; font-size: 0.78rem; }
+  .request-card { padding: 12px 14px; flex-wrap: wrap; gap: 10px; }
+  .request-actions { width: auto; }
+  .btn-accept, .btn-reject { padding: 6px 14px; font-size: 0.78rem; }
+  .request-pending-badge { font-size: 0.78rem; padding: 5px 12px; }
+  .friends-empty-state { padding: 36px 20px; }
+  .friends-empty-state .empty-icon { font-size: 2.5rem; }
+  .profile-actions-row { flex-direction: column; gap: 6px; }
+  .btn-friend-action { font-size: 0.82rem; padding: 7px 16px; }
+}
+
+@media (max-width: 380px) {
+  .friends-tabs button { font-size: 0.76rem; padding: 10px 4px; }
+  .request-actions { gap: 4px; }
+  .btn-accept, .btn-reject { padding: 5px 10px; font-size: 0.75rem; }
+  .nav-badge { min-width: 14px; height: 14px; font-size: 0.6rem; }
+}

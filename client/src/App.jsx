@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Search from './pages/Search';
+import Friends from './pages/Friends';
 import './App.css';
 
 function PrivateRoute({ children }) {
@@ -31,6 +32,7 @@ function AppRoutes() {
           <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
           <Route path="/profile/:id" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/search" element={<PrivateRoute><Search /></PrivateRoute>} />
+          <Route path="/friends" element={<PrivateRoute><Friends /></PrivateRoute>} />
         </Routes>
       </div>
     </>

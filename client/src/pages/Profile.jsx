@@ -13,6 +13,8 @@ function Profile() {
   const [bio, setBio] = useState('');
   const [activeTab, setActiveTab] = useState('posts');
   const [uploadingPic, setUploadingPic] = useState(false);
+  const [friendStatus, setFriendStatus] = useState('none'); // none | request_sent | request_received | friends
+  const [friendLoading, setFriendLoading] = useState(false);
 
   const isOwn = currentUser._id === id;
 
@@ -27,6 +29,12 @@ function Profile() {
         setProfile(userRes.data);
         setPosts(postsRes.data);
         setBio(userRes.data.bio || '');
+
+        // Fetch friend status if not own profile
+        if (!isOwn) {
+          const statusRes = await API.get(`/friends/status/${id}`);
+          setFriendStatus(statusRes.data.status);
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -86,6 +94,30 @@ function Profile() {
     }
   };
 
+  const handleFriendAction = async () => {
+    setFriendLoading(true);
+    try {
+      if (friendStatus === 'none') {
+        await API.post(`/friends/request/${id}`);
+        setFriendStatus('request_sent');
+      } else if (friendStatus === 'request_received') {
+        await API.put(`/friends/accept/${id}`);
+        setFriendStatus('friends');
+      } else if (friendStatus === 'friends') {
+        if (!window.confirm('Are you sure you want to unfriend?')) {
+          setFriendLoading(false);
+          return;
+        }
+        await API.delete(`/friends/remove/${id}`);
+        setFriendStatus('none');
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setFriendLoading(false);
+    }
+  };
+
   const handlePostUpdate = (updatedPost) => {
     setPosts(posts.map(p => p._id === updatedPost._id ? updatedPost : p));
   };
@@ -105,6 +137,31 @@ function Profile() {
     }
     return <div className="avatar-large">{profile.username[0].toUpperCase()}</div>;
   };
+
+  const renderFriendButton = () => {
+    if (isOwn) return null;
+
+    const buttonConfig = {
+      none: { text: '➕ Add Friend', className: 'btn-add-friend' },
+      request_sent: { text: '⏳ Request Sent', className: 'btn-request-sent' },
+      request_received: { text: '✓ Accept Request', className: 'btn-accept-request' },
+      friends: { text: '✓ Friends', className: 'btn-friends-status' },
+    };
+
+    const config = buttonConfig[friendStatus] || buttonConfig.none;
+
+    return (
+      <button
+        onClick={handleFriendAction}
+        className={`btn-friend-action ${config.className}`}
+        disabled={friendLoading || friendStatus === 'request_sent'}
+      >
+        {friendLoading ? '...' : config.text}
+      </button>
+    );
+  };
+
+  const friendsCount = profile.friends ? profile.friends.length : 0;
 
   return (
     <div className="profile-page">
@@ -126,9 +183,12 @@ function Profile() {
               </label>
             )}
           </div>
-          {isOwn && (
-            <button onClick={() => setEditBio(true)} className="btn-follow" style={{marginTop: '12px'}}>Edit profile</button>
-          )}
+          <div className="profile-actions-row">
+            {isOwn && (
+              <button onClick={() => setEditBio(true)} className="btn-follow" style={{marginTop: '12px'}}>Edit profile</button>
+            )}
+            {renderFriendButton()}
+          </div>
         </div>
 
         <h2>{profile.username}</h2>
@@ -148,6 +208,7 @@ function Profile() {
 
         <div className="profile-stats">
           <span><strong>{posts.length}</strong> Posts</span>
+          <span><strong>{friendsCount}</strong> Friends</span>
         </div>
       </div>
 

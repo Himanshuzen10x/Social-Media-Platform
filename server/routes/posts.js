@@ -1,5 +1,6 @@
 const express = require('express');
 const Post = require('../models/Post');
+const User = require('../models/User');
 const auth = require('../middleware/auth');
 const router = express.Router();
 
@@ -22,6 +23,26 @@ router.get('/feed', auth, async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
     const posts = await Post.find()
+      .populate('user', 'username profilePic')
+      .populate('comments.user', 'username profilePic')
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+    res.json(posts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get friends feed (only friends' posts)
+router.get('/friends-feed', auth, async (req, res) => {
+  try {
+    const currentUser = await User.findById(req.user.id);
+    const friendIds = currentUser.friends || [];
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const posts = await Post.find({ user: { $in: friendIds } })
       .populate('user', 'username profilePic')
       .populate('comments.user', 'username profilePic')
       .sort({ createdAt: -1 })

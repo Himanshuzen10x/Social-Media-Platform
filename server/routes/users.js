@@ -8,7 +8,8 @@ router.get('/:id', auth, async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password')
       .populate('followers', 'username profilePic')
-      .populate('following', 'username profilePic');
+      .populate('following', 'username profilePic')
+      .populate('friends', 'username profilePic');
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user);
   } catch (error) {
