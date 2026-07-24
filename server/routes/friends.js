@@ -10,6 +10,12 @@ const sameId = (objOrId, targetIdStr) => {
   return idStr === targetIdStr.toString();
 };
 
+// Helper to ensure user arrays exist on legacy user documents
+const ensureArrays = (user) => {
+  if (!user.friends) user.friends = [];
+  if (!user.friendRequests) user.friendRequests = [];
+};
+
 // Send friend request
 router.post('/request/:id', auth, async (req, res) => {
   try {
@@ -24,6 +30,9 @@ router.post('/request/:id', auth, async (req, res) => {
     const currentUser = await User.findById(currentUserId);
 
     if (!targetUser) return res.status(404).json({ message: 'User not found' });
+
+    ensureArrays(targetUser);
+    ensureArrays(currentUser);
 
     // Check if already friends
     if (currentUser.friends.some(f => sameId(f, targetUserId))) {
@@ -91,6 +100,9 @@ router.put('/accept/:id', auth, async (req, res) => {
 
     if (!fromUser) return res.status(404).json({ message: 'User not found' });
 
+    ensureArrays(currentUser);
+    ensureArrays(fromUser);
+
     const request = currentUser.friendRequests.find(
       r => sameId(r.from, fromUserId) && sameId(r.to, currentUserId) && r.status === 'pending'
     );
@@ -131,6 +143,11 @@ router.put('/reject/:id', auth, async (req, res) => {
     const currentUser = await User.findById(currentUserId);
     const fromUser = await User.findById(fromUserId);
 
+    if (!currentUser) return res.status(404).json({ message: 'User not found' });
+
+    ensureArrays(currentUser);
+    if (fromUser) ensureArrays(fromUser);
+
     const request = currentUser.friendRequests.find(
       r => sameId(r.from, fromUserId) && sameId(r.to, currentUserId) && r.status === 'pending'
     );
@@ -167,6 +184,9 @@ router.delete('/remove/:id', auth, async (req, res) => {
     const friendUser = await User.findById(friendId);
 
     if (!friendUser) return res.status(404).json({ message: 'User not found' });
+
+    ensureArrays(currentUser);
+    ensureArrays(friendUser);
 
     if (!currentUser.friends.some(f => sameId(f, friendId))) {
       return res.status(400).json({ message: 'Not friends with this user' });
@@ -206,11 +226,15 @@ router.get('/requests', auth, async (req, res) => {
       .populate('friendRequests.from', 'username profilePic bio')
       .populate('friendRequests.to', 'username profilePic bio');
 
-    const received = currentUser.friendRequests.filter(
-      r => sameId(r.to, req.user.id) && !sameId(r.from, req.user.id) && r.status === 'pending'
+    if (!currentUser) return res.status(404).json({ message: 'User not found' });
+
+    const requests = currentUser.friendRequests || [];
+
+    const received = requests.filter(
+      r => r.to && r.from && sameId(r.to, req.user.id) && !sameId(r.from, req.user.id) && r.status === 'pending'
     );
-    const sent = currentUser.friendRequests.filter(
-      r => sameId(r.from, req.user.id) && !sameId(r.to, req.user.id) && r.status === 'pending'
+    const sent = requests.filter(
+      r => r.from && r.to && sameId(r.from, req.user.id) && !sameId(r.to, req.user.id) && r.status === 'pending'
     );
 
     res.json({ received, sent });
@@ -225,7 +249,9 @@ router.get('/list', auth, async (req, res) => {
     const currentUser = await User.findById(req.user.id)
       .populate('friends', 'username profilePic bio');
 
-    res.json(currentUser.friends);
+    if (!currentUser) return res.status(404).json({ message: 'User not found' });
+
+    res.json(currentUser.friends || []);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -239,19 +265,24 @@ router.get('/status/:id', auth, async (req, res) => {
 
     const currentUser = await User.findById(currentUserId);
 
-    if (currentUser.friends.some(f => sameId(f, targetUserId))) {
+    if (!currentUser) return res.status(404).json({ message: 'User not found' });
+
+    const friends = currentUser.friends || [];
+    const requests = currentUser.friendRequests || [];
+
+    if (friends.some(f => sameId(f, targetUserId))) {
       return res.json({ status: 'friends' });
     }
 
-    const sentRequest = currentUser.friendRequests.find(
-      r => sameId(r.from, currentUserId) && sameId(r.to, targetUserId) && r.status === 'pending'
+    const sentRequest = requests.find(
+      r => r.from && r.to && sameId(r.from, currentUserId) && sameId(r.to, targetUserId) && r.status === 'pending'
     );
     if (sentRequest) {
       return res.json({ status: 'request_sent' });
     }
 
-    const receivedRequest = currentUser.friendRequests.find(
-      r => sameId(r.from, targetUserId) && sameId(r.to, currentUserId) && r.status === 'pending'
+    const receivedRequest = requests.find(
+      r => r.from && r.to && sameId(r.from, targetUserId) && sameId(r.to, currentUserId) && r.status === 'pending'
     );
     if (receivedRequest) {
       return res.json({ status: 'request_received' });
