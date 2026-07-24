@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth, API } from '../context/AuthContext';
 import Post from '../components/Post';
@@ -11,9 +11,37 @@ function Friends() {
   const [requests, setRequests] = useState({ received: [], sent: [] });
   const [loading, setLoading] = useState(true);
 
+  // Chat State
+  const [activeChatFriend, setActiveChatFriend] = useState(null); // Friend object currently chatting with
+  const [messages, setMessages] = useState([]);
+  const [messageText, setMessageText] = useState('');
+  const [sendingMsg, setSendingMsg] = useState(false);
+  const [unreadCounts, setUnreadCounts] = useState({});
+  const messagesEndRef = useRef(null);
+
   useEffect(() => {
     fetchData();
+    fetchUnreadCounts();
   }, [activeTab]);
+
+  // Live polling for chat messages when a chat modal is open
+  useEffect(() => {
+    if (!activeChatFriend) return;
+
+    fetchConversation(activeChatFriend._id);
+    const interval = setInterval(() => {
+      fetchConversation(activeChatFriend._id, true);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [activeChatFriend]);
+
+  // Auto-scroll chat to bottom when messages update
+  useEffect(() => {
+    if (activeChatFriend) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, activeChatFriend]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -32,6 +60,61 @@ function Friends() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUnreadCounts = async () => {
+    try {
+      const res = await API.get('/messages/unread/count');
+      setUnreadCounts(res.data.byFriend || {});
+    } catch (err) {
+      // ignore
+    }
+  };
+
+  const fetchConversation = async (friendId, isBackground = false) => {
+    try {
+      const res = await API.get(`/messages/${friendId}`);
+      setMessages(res.data);
+      // Clear unread count for this friend locally
+      setUnreadCounts(prev => ({ ...prev, [friendId]: 0 }));
+    } catch (err) {
+      if (!isBackground) console.error(err);
+    }
+  };
+
+  const handleOpenChat = (friend) => {
+    setActiveChatFriend(friend);
+    setMessages([]);
+    setMessageText('');
+  };
+
+  const handleCloseChat = () => {
+    setActiveChatFriend(null);
+    setMessages([]);
+    setMessageText('');
+    fetchUnreadCounts();
+  };
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!messageText.trim() || !activeChatFriend || sendingMsg) return;
+
+    const textToSend = messageText.trim();
+    setMessageText('');
+    setSendingMsg(true);
+
+    try {
+      const res = await API.post('/messages', {
+        recipientId: activeChatFriend._id,
+        text: textToSend
+      });
+      setMessages(prev => [...prev, res.data]);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error sending message');
+      setMessageText(textToSend);
+    } finally {
+      setSendingMsg(false);
     }
   };
 
@@ -64,6 +147,9 @@ function Friends() {
     try {
       await API.delete(`/friends/remove/${friendId}`);
       setFriendsList(prev => prev.filter(f => f._id !== friendId));
+      if (activeChatFriend && activeChatFriend._id === friendId) {
+        handleCloseChat();
+      }
     } catch (err) {
       console.error(err);
     }
@@ -77,11 +163,17 @@ function Friends() {
     setFriendsPosts(prev => prev.filter(p => p._id !== postId));
   };
 
-  const renderAvatar = (u) => {
+  const renderAvatar = (u, size = 'normal') => {
+    const avatarClass = size === 'small' ? 'avatar-small' : 'avatar';
     if (u.profilePic) {
-      return <img src={u.profilePic} alt={u.username} className="avatar avatar-img" />;
+      return <img src={u.profilePic} alt={u.username} className={`${avatarClass} avatar-img`} />;
     }
-    return <div className="avatar">{u.username[0].toUpperCase()}</div>;
+    return <div className={avatarClass}>{u.username[0].toUpperCase()}</div>;
+  };
+
+  const formatMsgTime = (dateStr) => {
+    const d = new Date(dateStr);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
@@ -149,24 +241,36 @@ function Friends() {
                   <Link to="/search" className="btn-find-friends">Find Friends</Link>
                 </div>
               ) : (
-                friendsList.map(friend => (
-                  <div key={friend._id} className="friend-card">
-                    <Link to={`/profile/${friend._id}`} className="friend-card-info">
-                      {renderAvatar(friend)}
-                      <div className="friend-card-details">
-                        <strong>{friend.username}</strong>
-                        <span className="friend-card-handle">@{friend.username.toLowerCase()}</span>
-                        {friend.bio && <p className="friend-card-bio">{friend.bio}</p>}
+                friendsList.map(friend => {
+                  const unread = unreadCounts[friend._id] || 0;
+                  return (
+                    <div key={friend._id} className="friend-card">
+                      <Link to={`/profile/${friend._id}`} className="friend-card-info">
+                        {renderAvatar(friend)}
+                        <div className="friend-card-details">
+                          <strong>{friend.username}</strong>
+                          <span className="friend-card-handle">@{friend.username.toLowerCase()}</span>
+                          {friend.bio && <p className="friend-card-bio">{friend.bio}</p>}
+                        </div>
+                      </Link>
+                      <div className="friend-card-actions">
+                        <button
+                          onClick={() => handleOpenChat(friend)}
+                          className="btn-chat-action"
+                        >
+                          💬 Chat
+                          {unread > 0 && <span className="chat-unread-badge">{unread}</span>}
+                        </button>
+                        <button
+                          onClick={() => handleUnfriend(friend._id)}
+                          className="btn-unfriend"
+                        >
+                          Unfriend
+                        </button>
                       </div>
-                    </Link>
-                    <button
-                      onClick={() => handleUnfriend(friend._id)}
-                      className="btn-unfriend"
-                    >
-                      Unfriend
-                    </button>
-                  </div>
-                ))
+                    </div>
+                  );
+                })
               )}
             </div>
           )}
@@ -237,6 +341,64 @@ function Friends() {
             </div>
           )}
         </>
+      )}
+
+      {/* 💬 CHAT MODAL WINDOW */}
+      {activeChatFriend && (
+        <div className="chat-modal-overlay">
+          <div className="chat-modal">
+            {/* Chat Modal Header */}
+            <div className="chat-modal-header">
+              <Link to={`/profile/${activeChatFriend._id}`} className="chat-modal-user">
+                {renderAvatar(activeChatFriend, 'small')}
+                <div>
+                  <strong>{activeChatFriend.username}</strong>
+                  <span className="chat-online-status">● Active Chat</span>
+                </div>
+              </Link>
+              <button onClick={handleCloseChat} className="chat-modal-close" title="Close chat">✕</button>
+            </div>
+
+            {/* Chat Messages Stream */}
+            <div className="chat-messages-container">
+              {messages.length === 0 ? (
+                <div className="chat-empty-state">
+                  <span>👋</span>
+                  <p>Say hi to {activeChatFriend.username}!</p>
+                </div>
+              ) : (
+                messages.map((msg, index) => {
+                  const isMine = msg.sender._id === user._id || msg.sender === user._id;
+                  return (
+                    <div
+                      key={msg._id || index}
+                      className={`chat-message-bubble ${isMine ? 'mine' : 'theirs'}`}
+                    >
+                      <div className="chat-message-text">{msg.text}</div>
+                      <span className="chat-message-time">{formatMsgTime(msg.createdAt)}</span>
+                    </div>
+                  );
+                })
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Chat Input Bar */}
+            <form onSubmit={handleSendMessage} className="chat-input-form">
+              <input
+                type="text"
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                placeholder={`Message ${activeChatFriend.username}...`}
+                maxLength={1000}
+                autoFocus
+              />
+              <button type="submit" disabled={!messageText.trim() || sendingMsg}>
+                {sendingMsg ? '...' : 'Send 🚀'}
+              </button>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

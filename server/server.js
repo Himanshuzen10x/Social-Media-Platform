@@ -9,6 +9,7 @@ const userRoutes = require('./routes/users');
 const postRoutes = require('./routes/posts');
 const uploadRoutes = require('./routes/upload');
 const friendRoutes = require('./routes/friends');
+const messageRoutes = require('./routes/messages');
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/friends', friendRoutes);
+app.use('/api/messages', messageRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Social Media API is running' });
