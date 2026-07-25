@@ -6,9 +6,40 @@ function Post({ post, onUpdate, onDelete }) {
   const { user } = useAuth();
   const [commentText, setCommentText] = useState('');
   const [showComments, setShowComments] = useState(false);
+  const [voting, setVoting] = useState(false);
 
   const isLiked = post.likes.includes(user._id);
   const isOwner = post.user._id === user._id;
+
+  // Poll Stats
+  const hasPoll = post.poll && post.poll.options && post.poll.options.length >= 2;
+  let totalVotes = 0;
+  let hasVoted = false;
+  let userVotedOptionIndex = -1;
+
+  if (hasPoll) {
+    post.poll.options.forEach((opt, idx) => {
+      const voteCount = opt.votes ? opt.votes.length : 0;
+      totalVotes += voteCount;
+      if (opt.votes && opt.votes.some(vId => (vId._id || vId)?.toString() === user._id?.toString())) {
+        hasVoted = true;
+        userVotedOptionIndex = idx;
+      }
+    });
+  }
+
+  const handleVote = async (optionIndex) => {
+    if (voting) return;
+    setVoting(true);
+    try {
+      const res = await API.put(`/posts/poll/vote/${post._id}`, { optionIndex });
+      onUpdate(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setVoting(false);
+    }
+  };
 
   const handleLike = async () => {
     try {
@@ -47,28 +78,28 @@ function Post({ post, onUpdate, onDelete }) {
   const timeAgo = (date) => {
     const diff = Date.now() - new Date(date).getTime();
     const secs = Math.floor(diff / 1000);
-    if (secs < 60) return `${secs}s`;
+    if (secs < 60) return `${secs} seconds ago`;
     const mins = Math.floor(secs / 60);
-    if (mins < 60) return `${mins}m`;
+    if (mins < 60) return `${mins} ${mins === 1 ? 'hour' : 'hours'} ago`;
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h`;
+    if (hrs < 24) return `${hrs} ${hrs === 1 ? 'hour' : 'hours'} ago`;
     const days = Math.floor(hrs / 24);
-    if (days < 30) return `${days}d`;
+    if (days < 30) return `${days} ${days === 1 ? 'day' : 'days'} ago`;
     return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  const renderAvatar = (username, profilePic, size = 'small') => {
+  const renderAvatar = (username, profilePic) => {
     if (profilePic) {
       return (
         <img
           src={profilePic}
           alt={username}
-          className={size === 'small' ? 'avatar avatar-img' : 'avatar-large avatar-img'}
+          className="post-user-avatar avatar-img"
         />
       );
     }
     return (
-      <div className={size === 'small' ? 'avatar' : 'avatar-large'}>
+      <div className="post-user-avatar">
         {username[0].toUpperCase()}
       </div>
     );
@@ -77,40 +108,114 @@ function Post({ post, onUpdate, onDelete }) {
   return (
     <div className="post-card">
       <div className="post-header">
-        <Link to={`/profile/${post.user._id}`} className="post-user">
-          {renderAvatar(post.user.username, post.user.profilePic)}
-          <div className="post-user-info">
-            <div>
-              <span className="post-username">{post.user.username}</span>
-              <span className="post-handle"> @{post.user.username.toLowerCase()}</span>
-              <span className="post-handle"> · {timeAgo(post.createdAt)}</span>
-            </div>
+        <div className="post-user-info">
+          <Link to={`/profile/${post.user._id}`}>
+            {renderAvatar(post.user.username, post.user.profilePic)}
+          </Link>
+          <div className="post-user-meta">
+            <Link to={`/profile/${post.user._id}`} className="post-username">
+              {post.user.username}
+            </Link>
+            <span className="post-time">{timeAgo(post.createdAt)}</span>
           </div>
-        </Link>
-        {isOwner && <button onClick={handleDelete} className="btn-delete" title="Delete">✕</button>}
+        </div>
+        {isOwner && (
+          <button onClick={handleDelete} className="btn-delete-post" title="Delete post">···</button>
+        )}
       </div>
 
-      <p className="post-text">{post.text}</p>
+      {post.text && <p className="post-text">{post.text}</p>}
 
-      {post.image && (
-        <div className="post-image-container">
-          <img src={post.image} alt="Post" className="post-image" loading="lazy" />
+      {/* RENDER INTERACTIVE CAMPUS POLL */}
+      {hasPoll && (
+        <div className="post-poll-card">
+          <div className="poll-question-header">
+            <span className="poll-badge">📊 CAMPUS POLL</span>
+            <h4 className="poll-question-title">{post.poll.question}</h4>
+          </div>
+
+          <div className="poll-options-render-list">
+            {post.poll.options.map((opt, idx) => {
+              const voteCount = opt.votes ? opt.votes.length : 0;
+              const percentage = totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
+              const isMyChoice = userVotedOptionIndex === idx;
+
+              return (
+                <div
+                  key={idx}
+                  onClick={() => handleVote(idx)}
+                  className={`poll-option-render-item ${hasVoted ? 'voted-mode' : ''} ${isMyChoice ? 'my-vote' : ''}`}
+                >
+                  {/* Animated Progress Bar Fill */}
+                  {hasVoted && (
+                    <div
+                      className={`poll-progress-bar-fill ${isMyChoice ? 'my-bar' : ''}`}
+                      style={{ width: `${percentage}%` }}
+                    />
+                  )}
+
+                  <div className="poll-option-content-row">
+                    <span className="poll-option-text">
+                      {isMyChoice && <span className="my-vote-check">✓ </span>}
+                      {opt.optionText}
+                    </span>
+
+                    {hasVoted ? (
+                      <span className="poll-option-stats">
+                        <strong>{percentage}%</strong> ({voteCount})
+                      </span>
+                    ) : (
+                      <span className="poll-vote-cta">Vote 🗳️</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="poll-footer-meta">
+            <span>{totalVotes} {totalVotes === 1 ? 'Vote' : 'Votes'}</span>
+            <span>• {hasVoted ? 'You voted' : 'Click any option to vote'}</span>
+          </div>
         </div>
       )}
 
-      <div className="post-actions">
-        <button onClick={() => setShowComments(!showComments)} className="comment-btn">
-          💬 {post.comments.length > 0 && post.comments.length}
+      {post.image && (
+        <div className="post-image-container">
+          <img src={post.image} alt="Post content" className="post-image" loading="lazy" />
+        </div>
+      )}
+
+      {/* Summary Counts Line */}
+      {(post.likes.length > 0 || post.comments.length > 0) && (
+        <div className="post-stats-summary">
+          {post.likes.length > 0 && (
+            <span className="stats-likes">👍 {post.likes.length} {post.likes.length === 1 ? 'Like' : 'Likes'}</span>
+          )}
+          {post.comments.length > 0 && (
+            <span className="stats-comments" onClick={() => setShowComments(!showComments)}>
+              💬 {post.comments.length} {post.comments.length === 1 ? 'Comment' : 'Comments'}
+            </span>
+          )}
+        </div>
+      )}
+
+      <div className="post-actions-bar">
+        <button onClick={handleLike} className={`action-btn ${isLiked ? 'liked' : ''}`}>
+          👍 Like
         </button>
-        <button onClick={handleLike} className={`like-btn ${isLiked ? 'liked' : ''}`}>
-          {isLiked ? '♥' : '♡'} {post.likes.length > 0 && post.likes.length}
+        <button onClick={() => setShowComments(!showComments)} className="action-btn">
+          💬 Comment
+        </button>
+        <button onClick={() => alert('Post shared!')} className="action-btn">
+          ↗️ Share
         </button>
       </div>
 
       {showComments && (
         <div className="comments-section">
           {post.comments.map((c, i) => (
-            <div key={i} className="comment">
+            <div key={i} className="comment-item">
               <strong>{c.user?.username || 'User'}</strong> {c.text}
             </div>
           ))}
@@ -118,9 +223,9 @@ function Post({ post, onUpdate, onDelete }) {
             <input
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Post your reply..."
+              placeholder="Write a comment..."
             />
-            <button type="submit">Reply</button>
+            <button type="submit">Comment</button>
           </form>
         </div>
       )}

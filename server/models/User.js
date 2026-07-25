@@ -22,11 +22,40 @@ const userSchema = new mongoose.Schema({
   bio: {
     type: String,
     default: '',
-    maxlength: 200
+    maxlength: 300
+  },
+  major: {
+    type: String,
+    default: ''
+  },
+  graduating: {
+    type: String,
+    default: ''
+  },
+  interests: {
+    type: String,
+    default: ''
   },
   profilePic: {
     type: String,
     default: ''
+  },
+  profileVisibility: {
+    type: String,
+    enum: ['public', 'friends'],
+    default: 'public'
+  },
+  batchCrushEnabled: {
+    type: Boolean,
+    default: true
+  },
+  isAdmin: {
+    type: Boolean,
+    default: true
+  },
+  isOrganizer: {
+    type: Boolean,
+    default: true
   },
   followers: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -39,6 +68,24 @@ const userSchema = new mongoose.Schema({
   friends: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
+  }],
+  secretCrushes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  crushMatches: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    matchedAt: {
+      type: Date,
+      default: Date.now
+    },
+    seen: {
+      type: Boolean,
+      default: false
+    }
   }],
   friendRequests: [{
     from: {

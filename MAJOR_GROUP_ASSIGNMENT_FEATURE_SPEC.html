@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>The Batchmates - Major Auto-Group & Teacher Assignment Feature Spec</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 40px auto;
+      max-width: 850px;
+      color: #1c1e21;
+      line-height: 1.6;
+      background: #ffffff;
+    }
+    h1 {
+      color: #3b5998;
+      border-bottom: 3px solid #3b5998;
+      padding-bottom: 8px;
+    }
+    h2 {
+      color: #2b1055;
+      margin-top: 24px;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 4px;
+    }
+    h3 {
+      color: #3b5998;
+    }
+    code, pre {
+      background: #f0f2f5;
+      font-family: 'Courier New', monospace;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    pre {
+      padding: 12px;
+      overflow-x: auto;
+      border: 1px solid #ccd0d5;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+    th, td {
+      border: 1px solid #ccd0d5;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background: #3b5998;
+      color: white;
+    }
+    .badge {
+      background: #e7f3ff;
+      color: #3b5998;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .print-btn {
+      background: #3b5998;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      float: right;
+    }
+    @media print {
+      .print-btn { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <button class="print-btn" onclick="window.print()">🖨️ Save as PDF / Print</button>
+  
+  <h1>🎓 THE BATCHMATES</h1>
+  <p><strong>Feature Specification Document:</strong> Major Auto-Group & Teacher Assignment System<br>
+  <strong>Version:</strong> 1.0 | <strong>Project:</strong> The Batchmates Social Platform</p>
+  
+  <hr>
+
+  <h2>1. 📌 Executive Summary</h2>
+  <p>The <strong>Major Auto-Group & Teacher Assignment System</strong> is an automated academic feature for <em>The Batchmates</em>. Whenever a student sets their <strong>Major</strong> (e.g. <code>Computer Science</code>) and <strong>Graduating Year</strong> (e.g. <code>2026</code>) on their profile, the system automatically enrolls them into their corresponding department class group.</p>
+
+  <h2>2. 💡 Core Features</h2>
+  <ul>
+    <li><span class="badge">Auto Enrollment</span> Profile update triggers instant group placement with zero manual invite links.</li>
+    <li><span class="badge">Dual Tab Group</span> 📌 Official Teacher Desk (Assignments & Notices) + 💬 Student Discussion Hub.</li>
+    <li><span class="badge">Submission Portal</span> Students view deadlines and upload solution PDFs directly.</li>
+    <li><span class="badge">Teacher Verification</span> Distinctive <code>👨‍🏫 Verified Faculty</code> badge for authorized teachers.</li>
+  </ul>
+
+  <h2>3. 🛠️ Database Models Blueprint</h2>
+  <h3>User Schema Extension:</h3>
+  <pre>
+major: { type: String, enum: ['CSE', 'IT', 'ECE', 'ME', 'CE', 'BBA'], default: '' },
+role: { type: String, enum: ['student', 'teacher', 'admin'], default: 'student' },
+enrolledGroups: [{ type: Schema.Types.ObjectId, ref: 'Group' }]
+  </pre>
+
+  <h3>Group Schema:</h3>
+  <pre>
+name: "CSE - Batch 2026",
+major: "Computer Science & Engineering (CSE)",
+admins: [TeacherUserIDs],
+members: [StudentUserIDs]
+  </pre>
+
+  <h2>4. 🔌 API Endpoints Specification</h2>
+  <table>
+    <tr>
+      <th>Method</th>
+      <th>Endpoint</th>
+      <th>Permission</th>
+      <th>Description</th>
+    </tr>
+    <tr>
+      <td>POST</td>
+      <td>/api/groups/auto-enroll</td>
+      <td>Authenticated User</td>
+      <td>Auto-assigns student to group based on Major & Year.</td>
+    </tr>
+    <tr>
+      <td>POST</td>
+      <td>/api/assignments</td>
+      <td>Verified Teacher Only</td>
+      <td>Creates a new assignment with PDF attachment & deadline.</td>
+    </tr>
+    <tr>
+      <td>POST</td>
+      <td>/api/assignments/submit/:id</td>
+      <td>Enrolled Students</td>
+      <td>Uploads student assignment solution file.</td>
+    </tr>
+  </table>
+
+  <h2>5. 🚀 Implementation Roadmap</h2>
+  <ol>
+    <li>Update <code>User.js</code> schema with standardized Major enum & roles.</li>
+    <li>Create <code>Group.js</code> & <code>Assignment.js</code> models.</li>
+    <li>Implement auto-enrollment backend logic in <code>routes/groups.js</code>.</li>
+    <li>Build <code>GroupHub.jsx</code> frontend page with Teacher Assignment Desk.</li>
+    <li>Test assignment creation, student submission, and PDF downloads.</li>
+  </ol>
+</body>
+</html>

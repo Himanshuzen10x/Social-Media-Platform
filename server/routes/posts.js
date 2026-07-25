@@ -4,14 +4,63 @@ const User = require('../models/User');
 const auth = require('../middleware/auth');
 const router = express.Router();
 
-// Create post
+// Create post (Supports text, image, and optional poll)
 router.post('/', auth, async (req, res) => {
   try {
-    const { text, image } = req.body;
-    const post = new Post({ user: req.user.id, text, image });
+    const { text, image, poll } = req.body;
+    
+    let pollData = undefined;
+    if (poll && poll.question && Array.isArray(poll.options) && poll.options.length >= 2) {
+      pollData = {
+        question: poll.question,
+        options: poll.options.map(opt => ({
+          optionText: typeof opt === 'string' ? opt : opt.optionText,
+          votes: []
+        }))
+      };
+    }
+
+    const post = new Post({ user: req.user.id, text, image, poll: pollData });
     await post.save();
-    const populatedPost = await Post.findById(post._id).populate('user', 'username profilePic');
+    const populatedPost = await Post.findById(post._id)
+      .populate('user', 'username profilePic')
+      .populate('comments.user', 'username profilePic');
     res.status(201).json(populatedPost);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Vote in a Poll
+router.put('/poll/vote/:id', auth, async (req, res) => {
+  try {
+    const { optionIndex } = req.body;
+    const userId = req.user.id;
+
+    const post = await Post.findById(req.params.id);
+    if (!post || !post.poll || !post.poll.options) {
+      return res.status(404).json({ message: 'Poll not found' });
+    }
+
+    if (optionIndex < 0 || optionIndex >= post.poll.options.length) {
+      return res.status(400).json({ message: 'Invalid option selected' });
+    }
+
+    // Remove user's previous vote from any option
+    post.poll.options.forEach(opt => {
+      opt.votes = opt.votes.filter(vId => vId.toString() !== userId);
+    });
+
+    // Add user vote to the selected option
+    post.poll.options[optionIndex].votes.push(userId);
+
+    await post.save();
+
+    const updatedPost = await Post.findById(req.params.id)
+      .populate('user', 'username profilePic')
+      .populate('comments.user', 'username profilePic');
+
+    res.json(updatedPost);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
