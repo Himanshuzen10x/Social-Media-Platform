@@ -98,7 +98,7 @@ function Home({ defaultFeed = 'public' }) {
         const eligibleSuggestions = [];
 
         await Promise.all(
-          candidateUsers.slice(0, 10).map(async (candidate) => {
+          candidateUsers.map(async (candidate) => {
             try {
               const statusRes = await API.get(`/friends/status/${candidate._id}`);
               const st = statusRes.data.status;
@@ -113,7 +113,7 @@ function Home({ defaultFeed = 'public' }) {
           })
         );
 
-        setSuggestions(eligibleSuggestions.slice(0, 10));
+        setSuggestions(eligibleSuggestions);
         setFriendStatuses(statuses);
       } else {
         const friendsRes = await API.get('/friends/list');
@@ -175,12 +175,8 @@ function Home({ defaultFeed = 'public' }) {
     if (addingFriend[userId]) return;
     setAddingFriend(prev => ({ ...prev, [userId]: true }));
     try {
-      const res = await API.post(`/friends/request/${userId}`);
-      const newStatus = res.data.status === 'accepted' ? 'friends' : 'request_sent';
-      setFriendStatuses(prev => ({
-        ...prev,
-        [userId]: newStatus
-      }));
+      await API.post(`/friends/request/${userId}`);
+      setSuggestions(prev => prev.filter(u => u._id !== userId));
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || 'Could not send friend request');
