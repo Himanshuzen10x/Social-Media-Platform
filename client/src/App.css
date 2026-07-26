@@ -1171,8 +1171,8 @@ button, input, textarea {
 }
 
 .people-you-may-know-body {
-  max-height: 250px;
-  overflow-y: auto;
+  max-height: 180px;
+  overflow-y: auto !important;
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
   padding-right: 4px;
