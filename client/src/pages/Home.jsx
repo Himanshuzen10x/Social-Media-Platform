@@ -369,17 +369,8 @@ function Home({ defaultFeed = 'public' }) {
                 </div>
                 <div className="widget-body">
                   {friendRequests.length === 0 ? (
-                    <div className="request-widget-item">
-                      <div className="request-widget-user">
-                        <div className="widget-avatar-placeholder">M</div>
-                        <div className="widget-user-details">
-                          <strong>Marcus Wright</strong>
-                          <div className="widget-btn-row">
-                            <button onClick={() => alert('Confirmed')} className="btn-confirm">Confirm</button>
-                            <button onClick={() => alert('Ignored')} className="btn-ignore">Ignore</button>
-                          </div>
-                        </div>
-                      </div>
+                    <div style={{ padding: '12px 8px', textAlign: 'center', color: '#65676b', fontSize: '0.88rem' }}>
+                      <span>No pending friend requests.</span>
                     </div>
                   ) : (
                     friendRequests.map(req => (
