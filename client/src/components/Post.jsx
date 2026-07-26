@@ -7,6 +7,7 @@ function Post({ post, onUpdate, onDelete }) {
   const [commentText, setCommentText] = useState('');
   const [showComments, setShowComments] = useState(false);
   const [voting, setVoting] = useState(false);
+  const [submittingComment, setSubmittingComment] = useState(false);
 
   const isLiked = post.likes.includes(user._id);
   const isOwner = post.user._id === user._id;
@@ -55,13 +56,16 @@ function Post({ post, onUpdate, onDelete }) {
 
   const handleComment = async (e) => {
     e.preventDefault();
-    if (!commentText.trim()) return;
+    if (!commentText.trim() || submittingComment) return;
+    setSubmittingComment(true);
     try {
       const res = await API.post(`/posts/comment/${post._id}`, { text: commentText });
       onUpdate(res.data);
       setCommentText('');
     } catch (err) {
       console.error(err);
+    } finally {
+      setSubmittingComment(false);
     }
   };
 
@@ -224,8 +228,11 @@ function Post({ post, onUpdate, onDelete }) {
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               placeholder="Write a comment..."
+              disabled={submittingComment}
             />
-            <button type="submit">Comment</button>
+            <button type="submit" disabled={submittingComment || !commentText.trim()}>
+              {submittingComment ? 'Posting...' : 'Comment'}
+            </button>
           </form>
         </div>
       )}
