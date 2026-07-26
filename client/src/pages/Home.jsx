@@ -85,6 +85,7 @@ function Home({ defaultFeed = 'public' }) {
   }, [feedType, page, hasMore, loading, loadingMore]);
 
   const fetchSidebarData = async () => {
+    if (!user?._id) return;
     try {
       if (feedType === 'public') {
         const reqRes = await API.get('/friends/requests');
@@ -96,36 +97,37 @@ function Home({ defaultFeed = 'public' }) {
         const statuses = {};
         const eligibleSuggestions = [];
 
-        for (const candidate of candidateUsers) {
-          try {
-            const statusRes = await API.get(`/friends/status/${candidate._id}`);
-            const st = statusRes.data.status;
-            statuses[candidate._id] = st;
-            if (st === 'none') {
+        await Promise.all(
+          candidateUsers.slice(0, 10).map(async (candidate) => {
+            try {
+              const statusRes = await API.get(`/friends/status/${candidate._id}`);
+              const st = statusRes.data.status;
+              statuses[candidate._id] = st;
+              if (st === 'none') {
+                eligibleSuggestions.push(candidate);
+              }
+            } catch {
+              statuses[candidate._id] = 'none';
               eligibleSuggestions.push(candidate);
             }
-          } catch {
-            statuses[candidate._id] = 'none';
-            eligibleSuggestions.push(candidate);
-          }
-          if (eligibleSuggestions.length >= 4) break;
-        }
+          })
+        );
 
-        setSuggestions(eligibleSuggestions);
+        setSuggestions(eligibleSuggestions.slice(0, 4));
         setFriendStatuses(statuses);
       } else {
         const friendsRes = await API.get('/friends/list');
         setOnlineFriends((friendsRes.data || []).slice(0, 4));
       }
     } catch (err) {
-      // ignore
+      console.error('Sidebar fetch error:', err);
     }
   };
 
   useEffect(() => {
     fetchInitialPosts();
     fetchSidebarData();
-  }, [feedType, fetchInitialPosts]);
+  }, [feedType, fetchInitialPosts, user?._id]);
 
   // Window Scroll Listener for Infinite Scroll
   useEffect(() => {
@@ -169,15 +171,17 @@ function Home({ defaultFeed = 'public' }) {
     }
   };
 
-  const handleAddFriend = async (userId) => {
+  const handleAddFriend = async (userId, username = '') => {
     if (addingFriend[userId]) return;
     setAddingFriend(prev => ({ ...prev, [userId]: true }));
     try {
       const res = await API.post(`/friends/request/${userId}`);
+      const newStatus = res.data.status === 'accepted' ? 'friends' : 'request_sent';
       setFriendStatuses(prev => ({
         ...prev,
-        [userId]: res.data.status === 'accepted' ? 'friends' : 'request_sent'
+        [userId]: newStatus
       }));
+      alert(res.data.message || `Friend request sent to ${username || 'user'}!`);
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || 'Could not send friend request');
@@ -448,7 +452,7 @@ function Home({ defaultFeed = 'public' }) {
                                 </button>
                               ) : (
                                 <button
-                                  onClick={() => handleAddFriend(sugUser._id)}
+                                  onClick={() => handleAddFriend(sugUser._id, sugUser.username)}
                                   className="btn-add-friend-widget"
                                   disabled={isAdding}
                                 >
