@@ -113,7 +113,7 @@ function Home({ defaultFeed = 'public' }) {
           })
         );
 
-        setSuggestions(eligibleSuggestions.slice(0, 4));
+        setSuggestions(eligibleSuggestions.slice(0, 10));
         setFriendStatuses(statuses);
       } else {
         const friendsRes = await API.get('/friends/list');
@@ -413,7 +413,7 @@ function Home({ defaultFeed = 'public' }) {
                 <div className="widget-header">
                   <span>People You May Know</span>
                 </div>
-                <div className="widget-body">
+                <div className="widget-body people-you-may-know-body">
                   {suggestions.length === 0 ? (
                     <div style={{ padding: '12px 8px', textAlign: 'center', color: '#65676b', fontSize: '0.88rem' }}>
                       <span>No new suggestions.</span>
