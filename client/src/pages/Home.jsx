@@ -17,6 +17,8 @@ function Home({ defaultFeed = 'public' }) {
   const [friendRequests, setFriendRequests] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [onlineFriends, setOnlineFriends] = useState([]);
+  const [friendStatuses, setFriendStatuses] = useState({});
+  const [addingFriend, setAddingFriend] = useState({});
 
   useEffect(() => {
     if (location.pathname === '/friend-feed') {
@@ -89,7 +91,28 @@ function Home({ defaultFeed = 'public' }) {
         setFriendRequests(reqRes.data.received || []);
 
         const usersRes = await API.get('/users?search=');
-        setSuggestions((usersRes.data || []).filter(u => u._id !== user._id).slice(0, 3));
+        const candidateUsers = (usersRes.data || []).filter(u => u._id !== user._id);
+
+        const statuses = {};
+        const eligibleSuggestions = [];
+
+        for (const candidate of candidateUsers) {
+          try {
+            const statusRes = await API.get(`/friends/status/${candidate._id}`);
+            const st = statusRes.data.status;
+            statuses[candidate._id] = st;
+            if (st === 'none') {
+              eligibleSuggestions.push(candidate);
+            }
+          } catch {
+            statuses[candidate._id] = 'none';
+            eligibleSuggestions.push(candidate);
+          }
+          if (eligibleSuggestions.length >= 4) break;
+        }
+
+        setSuggestions(eligibleSuggestions);
+        setFriendStatuses(statuses);
       } else {
         const friendsRes = await API.get('/friends/list');
         setOnlineFriends((friendsRes.data || []).slice(0, 4));
@@ -147,11 +170,19 @@ function Home({ defaultFeed = 'public' }) {
   };
 
   const handleAddFriend = async (userId) => {
+    if (addingFriend[userId]) return;
+    setAddingFriend(prev => ({ ...prev, [userId]: true }));
     try {
-      await API.post(`/friends/request/${userId}`);
-      setSuggestions(prev => prev.filter(u => u._id !== userId));
+      const res = await API.post(`/friends/request/${userId}`);
+      setFriendStatuses(prev => ({
+        ...prev,
+        [userId]: res.data.status === 'accepted' ? 'friends' : 'request_sent'
+      }));
     } catch (err) {
       console.error(err);
+      alert(err.response?.data?.message || 'Could not send friend request');
+    } finally {
+      setAddingFriend(prev => ({ ...prev, [userId]: false }));
     }
   };
 
@@ -380,47 +411,55 @@ function Home({ defaultFeed = 'public' }) {
                 </div>
                 <div className="widget-body">
                   {suggestions.length === 0 ? (
-                    <>
-                      <div className="suggestion-widget-item">
-                        <div className="suggestion-user-row">
-                          <div className="widget-avatar-placeholder">C</div>
-                          <div className="widget-user-details">
-                            <strong>Chloe Adams</strong>
-                            <span className="mutual-friends-text">3 mutual friends</span>
-                            <button className="btn-add-friend-widget">➕ Add Friend</button>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="suggestion-widget-item">
-                        <div className="suggestion-user-row">
-                          <div className="widget-avatar-placeholder">D</div>
-                          <div className="widget-user-details">
-                            <strong>Daniel Kim</strong>
-                            <span className="mutual-friends-text">1 mutual friend</span>
-                            <button className="btn-add-friend-widget">➕ Add Friend</button>
-                          </div>
-                        </div>
-                      </div>
-                    </>
+                    <div style={{ padding: '12px 8px', textAlign: 'center', color: '#65676b', fontSize: '0.88rem' }}>
+                      <span>No new suggestions.</span>
+                      <br />
+                      <Link to="/search" style={{ color: 'var(--primary-blue)', fontWeight: 600, marginTop: '4px', display: 'inline-block' }}>
+                        Find members 🔍
+                      </Link>
+                    </div>
                   ) : (
-                    suggestions.map(sugUser => (
-                      <div key={sugUser._id} className="suggestion-widget-item">
-                        <div className="suggestion-user-row">
-                          {sugUser.profilePic ? (
-                            <img src={sugUser.profilePic} alt={sugUser.username} className="widget-avatar" />
-                          ) : (
-                            <div className="widget-avatar-placeholder">{sugUser.username[0].toUpperCase()}</div>
-                          )}
-                          <div className="widget-user-details">
-                            <strong>{sugUser.username}</strong>
-                            <span className="mutual-friends-text">Campus Member</span>
-                            <button onClick={() => handleAddFriend(sugUser._id)} className="btn-add-friend-widget">
-                              👤+ Add Friend
-                            </button>
+                    suggestions.map(sugUser => {
+                      const status = friendStatuses[sugUser._id];
+                      const isAdding = addingFriend[sugUser._id];
+
+                      return (
+                        <div key={sugUser._id} className="suggestion-widget-item">
+                          <div className="suggestion-user-row">
+                            <Link to={`/profile/${sugUser._id}`}>
+                              {sugUser.profilePic ? (
+                                <img src={sugUser.profilePic} alt={sugUser.username} className="widget-avatar" />
+                              ) : (
+                                <div className="widget-avatar-placeholder">{sugUser.username[0].toUpperCase()}</div>
+                              )}
+                            </Link>
+                            <div className="widget-user-details">
+                              <Link to={`/profile/${sugUser._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                <strong>{sugUser.username}</strong>
+                              </Link>
+                              <span className="mutual-friends-text">Campus Member</span>
+                              {status === 'request_sent' ? (
+                                <button className="btn-add-friend-widget sent" disabled style={{ opacity: 0.75, cursor: 'default', backgroundColor: '#e4e6eb', color: '#050505' }}>
+                                  ⏳ Request Sent
+                                </button>
+                              ) : status === 'friends' ? (
+                                <button className="btn-add-friend-widget friends" disabled style={{ opacity: 0.75, cursor: 'default', backgroundColor: '#e7f3ff', color: 'var(--primary-blue)' }}>
+                                  ✓ Friends
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleAddFriend(sugUser._id)}
+                                  className="btn-add-friend-widget"
+                                  disabled={isAdding}
+                                >
+                                  {isAdding ? 'Sending...' : '👤+ Add Friend'}
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                   <Link to="/search" className="widget-footer-link">View All Suggestions</Link>
                 </div>
