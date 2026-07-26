@@ -171,7 +171,7 @@ function Home({ defaultFeed = 'public' }) {
     }
   };
 
-  const handleAddFriend = async (userId, username = '') => {
+  const handleAddFriend = async (userId) => {
     if (addingFriend[userId]) return;
     setAddingFriend(prev => ({ ...prev, [userId]: true }));
     try {
@@ -181,7 +181,6 @@ function Home({ defaultFeed = 'public' }) {
         ...prev,
         [userId]: newStatus
       }));
-      alert(res.data.message || `Friend request sent to ${username || 'user'}!`);
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || 'Could not send friend request');
@@ -452,7 +451,7 @@ function Home({ defaultFeed = 'public' }) {
                                 </button>
                               ) : (
                                 <button
-                                  onClick={() => handleAddFriend(sugUser._id, sugUser.username)}
+                                  onClick={() => handleAddFriend(sugUser._id)}
                                   className="btn-add-friend-widget"
                                   disabled={isAdding}
                                 >
