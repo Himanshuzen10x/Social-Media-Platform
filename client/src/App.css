@@ -1170,6 +1170,31 @@ button, input, textarea {
   padding: 10px 12px;
 }
 
+.people-you-may-know-body {
+  max-height: 250px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+  padding-right: 4px;
+}
+
+.people-you-may-know-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.people-you-may-know-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.people-you-may-know-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.people-you-may-know-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
 .widget-empty {
   font-size: 0.82rem;
   color: var(--text-muted);
