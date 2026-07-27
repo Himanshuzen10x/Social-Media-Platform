@@ -7,8 +7,13 @@ const router = express.Router();
 // Helper to check if two users are friends
 const sameId = (a, b) => a && b && (a._id ? a._id.toString() : a.toString()) === b.toString();
 
-// Send message to a friend
-router.post('/', auth, async (req, res) => {
+const ensureArrays = (user) => {
+  if (!user.friends) user.friends = [];
+  if (!user.friendRequests) user.friendRequests = [];
+};
+
+// Send message to a friend (supports both POST / and POST /send)
+const sendMessageHandler = async (req, res) => {
   try {
     const { recipientId, text } = req.body;
     const senderId = req.user.id;
@@ -25,10 +30,13 @@ router.post('/', auth, async (req, res) => {
     const recipientUser = await User.findById(recipientId);
     const senderUser = await User.findById(senderId);
 
-    if (!recipientUser) return res.status(404).json({ message: 'User not found' });
+    if (!recipientUser || !senderUser) return res.status(404).json({ message: 'User not found' });
+
+    ensureArrays(senderUser);
+    ensureArrays(recipientUser);
 
     // Verify they are friends
-    const isFriend = senderUser.friends && senderUser.friends.some(f => sameId(f, recipientId));
+    const isFriend = senderUser.friends.some(f => sameId(f, recipientId));
     if (!isFriend) {
       return res.status(403).json({ message: 'You can only message users who are your friends' });
     }
@@ -49,7 +57,10 @@ router.post('/', auth, async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-});
+};
+
+router.post('/', auth, sendMessageHandler);
+router.post('/send', auth, sendMessageHandler);
 
 // Get conversation messages between current user and a friend
 router.get('/:friendId', auth, async (req, res) => {

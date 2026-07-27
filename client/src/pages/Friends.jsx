@@ -102,9 +102,10 @@ function Friends({ defaultTab = 'messages' }) {
 
       setMessages(prev => [...prev, res.data]);
       setMessageText('');
+      setTimeout(() => scrollToBottom(true), 50);
     } catch (err) {
       console.error(err);
-      alert('Failed to send message');
+      alert(err.response?.data?.message || 'Failed to send message');
     } finally {
       setSendingMsg(false);
     }
