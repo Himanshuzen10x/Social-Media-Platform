@@ -11,7 +11,16 @@ function Friends({ defaultTab = 'messages' }) {
   const [loading, setLoading] = useState(true);
   const [sendingMsg, setSendingMsg] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState({});
-  const messagesEndRef = useRef(null);
+  const chatBodyRef = useRef(null);
+
+  const scrollToBottom = (smooth = true) => {
+    if (chatBodyRef.current) {
+      chatBodyRef.current.scrollTo({
+        top: chatBodyRef.current.scrollHeight,
+        behavior: smooth ? 'smooth' : 'auto'
+      });
+    }
+  };
 
   // Fetch Friends List
   useEffect(() => {
@@ -45,8 +54,18 @@ function Friends({ defaultTab = 'messages' }) {
     const fetchMessages = async () => {
       try {
         const res = await API.get(`/messages/${activeChatFriend._id}`);
-        setMessages(res.data || []);
-        
+        const newMsgs = res.data || [];
+
+        setMessages(prev => {
+          if (
+            prev.length !== newMsgs.length ||
+            (newMsgs.length > 0 && prev[prev.length - 1]?._id !== newMsgs[newMsgs.length - 1]?._id)
+          ) {
+            return newMsgs;
+          }
+          return prev;
+        });
+
         // Clear unread count for this friend
         setUnreadCounts(prev => ({ ...prev, [activeChatFriend._id]: 0 }));
       } catch (err) {
@@ -59,10 +78,12 @@ function Friends({ defaultTab = 'messages' }) {
     return () => clearInterval(interval);
   }, [activeChatFriend]);
 
-  // Auto Scroll to Bottom on New Message
+  // Scroll inner chat container to bottom when messages count changes or friend switches
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (messages.length > 0) {
+      scrollToBottom(true);
+    }
+  }, [messages.length, activeChatFriend?._id]);
 
   const handleSelectFriendChat = (friend) => {
     setActiveChatFriend(friend);
@@ -185,7 +206,7 @@ function Friends({ defaultTab = 'messages' }) {
               </div>
 
               {/* Chat Messages Stream */}
-              <div className="chat-messages-body">
+              <div className="chat-messages-body" ref={chatBodyRef}>
                 <div className="chat-date-separator">
                   <span>Today</span>
                 </div>
@@ -216,7 +237,6 @@ function Friends({ defaultTab = 'messages' }) {
                     );
                   })
                 )}
-                <div ref={messagesEndRef} />
               </div>
 
               {/* Chat Input Bar Footer */}
