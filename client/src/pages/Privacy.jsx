@@ -69,7 +69,7 @@ function Privacy() {
             <h3>6. Contact & Data Control</h3>
             <p>
               You have full control to edit your profile info, update account passwords, or request data deletion by contacting lead developer 
-              <strong>Himanshu Khare</strong> (<a href="https://instagram.com/himanshuzen10x" target="_blank" rel="noopener noreferrer">@himanshuzen10x</a>).
+              <strong>Himanshu Khare</strong> (<a href="https://instagram.com/himanshuk.hare" target="_blank" rel="noopener noreferrer">@himanshuk.hare</a>).
             </p>
           </div>
         </div>
