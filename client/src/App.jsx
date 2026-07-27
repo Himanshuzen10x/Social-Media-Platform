@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
 import { AuthProvider, useAuth, API } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
@@ -10,6 +10,9 @@ import Search from './pages/Search';
 import Friends from './pages/Friends';
 import Events from './pages/Events';
 import Settings from './pages/Settings';
+import About from './pages/About';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
 import MatchModal from './components/MatchModal';
 import './App.css';
 
@@ -84,6 +87,9 @@ function AppRoutes() {
           <Route path="/search" element={<PrivateRoute><Search /></PrivateRoute>} />
           <Route path="/events" element={<PrivateRoute><Events /></PrivateRoute>} />
           <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+          <Route path="/about" element={<About />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
         </Routes>
       </div>
 
@@ -91,9 +97,9 @@ function AppRoutes() {
         <footer className="campus-page-footer">
           <div className="footer-left">
             <span>© 2004 The Batchmates</span>
-            <a href="#about" onClick={(e) => e.preventDefault()}>About</a>
-            <a href="#terms" onClick={(e) => e.preventDefault()}>Terms</a>
-            <a href="#privacy" onClick={(e) => e.preventDefault()}>Privacy</a>
+            <Link to="/about">About</Link>
+            <Link to="/terms">Terms</Link>
+            <Link to="/privacy">Privacy</Link>
           </div>
           <div className="footer-right">
             <span>🎓 Educational Use Only</span>
