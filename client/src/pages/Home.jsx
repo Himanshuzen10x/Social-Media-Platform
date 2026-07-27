@@ -19,6 +19,7 @@ function Home({ defaultFeed = 'public' }) {
   const [onlineFriends, setOnlineFriends] = useState([]);
   const [friendStatuses, setFriendStatuses] = useState({});
   const [addingFriend, setAddingFriend] = useState({});
+  const [processingRequests, setProcessingRequests] = useState({});
 
   useEffect(() => {
     if (location.pathname === '/friend-feed') {
@@ -154,20 +155,30 @@ function Home({ defaultFeed = 'public' }) {
   };
 
   const handleAcceptRequest = async (fromUserId) => {
+    if (processingRequests[fromUserId]) return;
+    setProcessingRequests(prev => ({ ...prev, [fromUserId]: true }));
     try {
       await API.put(`/friends/accept/${fromUserId}`);
-      setFriendRequests(prev => prev.filter(r => r.from._id !== fromUserId));
+      setFriendRequests(prev => prev.filter(r => (r.from?._id || r.from) !== fromUserId));
+      fetchSidebarData();
     } catch (err) {
       console.error(err);
+    } finally {
+      setProcessingRequests(prev => ({ ...prev, [fromUserId]: false }));
     }
   };
 
   const handleIgnoreRequest = async (fromUserId) => {
+    if (processingRequests[fromUserId]) return;
+    setProcessingRequests(prev => ({ ...prev, [fromUserId]: true }));
     try {
       await API.put(`/friends/reject/${fromUserId}`);
-      setFriendRequests(prev => prev.filter(r => r.from._id !== fromUserId));
+      setFriendRequests(prev => prev.filter(r => (r.from?._id || r.from) !== fromUserId));
+      fetchSidebarData();
     } catch (err) {
       console.error(err);
+    } finally {
+      setProcessingRequests(prev => ({ ...prev, [fromUserId]: false }));
     }
   };
 
@@ -384,8 +395,20 @@ function Home({ defaultFeed = 'public' }) {
                           <div className="widget-user-details">
                             <strong>{req.from.username}</strong>
                             <div className="widget-btn-row">
-                              <button onClick={() => handleAcceptRequest(req.from._id)} className="btn-confirm">Confirm</button>
-                              <button onClick={() => handleIgnoreRequest(req.from._id)} className="btn-ignore">Ignore</button>
+                              <button
+                                onClick={() => handleAcceptRequest(req.from._id)}
+                                className="btn-confirm"
+                                disabled={processingRequests[req.from._id]}
+                              >
+                                {processingRequests[req.from._id] ? '...' : 'Confirm'}
+                              </button>
+                              <button
+                                onClick={() => handleIgnoreRequest(req.from._id)}
+                                className="btn-ignore"
+                                disabled={processingRequests[req.from._id]}
+                              >
+                                Ignore
+                              </button>
                             </div>
                           </div>
                         </div>
