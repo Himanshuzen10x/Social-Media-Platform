@@ -1769,7 +1769,8 @@ button, input, textarea {
    MESSAGES PAGE 3-COLUMN STATIC VIEW (ONLY CENTER CHAT MESSAGES BODY SCROLLS)
    ========================================================================== */
 .messages-static-wrapper {
-  height: calc(100vh - 48px);
+  height: calc(100vh - 50px);
+  max-height: calc(100vh - 50px);
   overflow: hidden;
 }
 
@@ -1778,11 +1779,12 @@ button, input, textarea {
   grid-template-columns: 190px 1fr 250px;
   gap: 16px;
   max-width: 1140px;
-  margin: 10px auto 0;
+  margin: 6px auto 0;
   padding: 0 12px;
-  align-items: start;
-  height: calc(100vh - 94px);
+  align-items: stretch;
+  height: calc(100vh - 62px);
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Column 3: Inboxes List Column (Fixed Height Box) */
@@ -1792,7 +1794,8 @@ button, input, textarea {
   border-radius: 2px;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 98px);
+  height: 100%;
+  max-height: 100%;
   overflow: hidden;
 }
 
@@ -1941,7 +1944,8 @@ button, input, textarea {
   border-radius: 2px;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 98px);
+  height: 100%;
+  max-height: 100%;
   overflow: hidden;
 }
 
@@ -2005,6 +2009,7 @@ button, input, textarea {
   flex: 1;
   padding: 16px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   background: #ffffff;
   display: flex;
   flex-direction: column;
