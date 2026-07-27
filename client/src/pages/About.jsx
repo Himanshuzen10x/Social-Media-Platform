@@ -36,13 +36,13 @@ function About() {
 
           <div className="developer-social-links">
             <a
-              href="https://instagram.com/himanshuzen10x"
+              href="https://instagram.com/himanshuk.hare"
               target="_blank"
               rel="noopener noreferrer"
               className="social-btn instagram-btn"
             >
               <span className="social-icon">📸</span>
-              <span className="social-text">Instagram: <strong>@himanshuzen10x</strong></span>
+              <span className="social-text">Instagram: <strong>@himanshuk.hare</strong></span>
             </a>
 
             <a
