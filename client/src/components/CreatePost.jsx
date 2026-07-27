@@ -209,9 +209,10 @@ function CreatePost({ onPostCreated, isFriendFeed = false }) {
               type="button"
               className={`btn-link-action ${showPollBuilder ? 'poll-active' : ''}`}
               onClick={() => setShowPollBuilder(!showPollBuilder)}
-              title="Create Poll"
+              title="Create Poll & Attach Link"
             >
-              📊 Poll
+              <img src="/link-icon.png" alt="Link" className="btn-png-link-icon" />
+              <span>Poll / Link</span>
             </button>
           </div>
 
