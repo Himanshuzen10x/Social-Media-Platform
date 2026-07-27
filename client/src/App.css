@@ -400,7 +400,7 @@ button, input, textarea {
   border-bottom: 1px solid var(--bg-header-dark);
   position: sticky;
   top: 0;
-  z-index: 500;
+  z-index: 1000;
   height: 48px;
   display: flex;
   align-items: center;
