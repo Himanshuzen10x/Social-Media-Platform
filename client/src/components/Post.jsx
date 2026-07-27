@@ -8,6 +8,7 @@ function Post({ post, onUpdate, onDelete }) {
   const [showComments, setShowComments] = useState(false);
   const [voting, setVoting] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const isLiked = post.likes.includes(user._id);
   const isOwner = post.user._id === user._id;
@@ -67,6 +68,13 @@ function Post({ post, onUpdate, onDelete }) {
     } finally {
       setSubmittingComment(false);
     }
+  };
+
+  const handleShareLink = () => {
+    const postUrl = `${window.location.origin}/#post-${post._id}`;
+    navigator.clipboard.writeText(postUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
   };
 
   const handleDelete = async () => {
@@ -211,8 +219,9 @@ function Post({ post, onUpdate, onDelete }) {
         <button onClick={() => setShowComments(!showComments)} className="action-btn">
           💬 Comment
         </button>
-        <button onClick={() => alert('Post shared!')} className="action-btn">
-          ↗️ Share
+        <button onClick={handleShareLink} className="action-btn share-link-btn" title="Copy post link">
+          <img src="/link-icon.png" alt="Link" className="btn-png-link-icon" />
+          <span>{copiedLink ? '✓ Copied!' : 'Share Link'}</span>
         </button>
       </div>
 
