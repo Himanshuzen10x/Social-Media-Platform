@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth, API } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
@@ -27,6 +27,7 @@ function PublicRoute({ children }) {
 
 function AppRoutes() {
   const { user } = useAuth();
+  const location = useLocation();
   const [unseenMatch, setUnseenMatch] = useState(null);
 
   useEffect(() => {
@@ -86,7 +87,7 @@ function AppRoutes() {
         </Routes>
       </div>
 
-      {user && (
+      {user && location.pathname !== '/messages' && location.pathname !== '/friends' && (
         <footer className="campus-page-footer">
           <div className="footer-left">
             <span>© 2004 The Batchmates</span>
